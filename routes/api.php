@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\MatkulController;
+use App\Http\Controllers\Api\MahasiswaController;
+use App\Http\Controllers\Api\DosenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,8 +27,11 @@ Route::group([
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/user-profile', [AuthController::class, 'userProfile']);
+    Route::post('/update-profile', [AuthController::class, 'updateProfile']);
 });
 
 Route::middleware(['auth:api'])->group(function () {
     Route::apiResource('matkuls', MatkulController::class);
+    Route::apiResource('mahasiswas', MahasiswaController::class);
+    Route::apiResource('dosens', DosenController::class);
 });
