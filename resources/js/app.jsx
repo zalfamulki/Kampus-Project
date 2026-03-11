@@ -1,4 +1,8 @@
+import './bootstrap';
+import '../css/app.css';
+
 import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { LogIn, LogOut, UserPlus, BookOpen, Plus, Edit, Trash2, Home as HomeIcon } from 'lucide-react';
@@ -44,19 +48,19 @@ const Layout = ({ children, user, setUser }) => {
                     <div className="space-x-4 flex items-center">
                         {user ? (
                             <>
-                                <Link to="/matkuls" className="hover:text-blue-200 transition">Matakuliah</Link>
-                                <span className="bg-blue-700 px-3 py-1 rounded text-sm">{user.name}</span>
-                                <button onClick={handleLogout} className="flex items-center hover:text-blue-200 transition">
-                                    <LogOut size={18} className="mr-1" /> Logout
+                                <Link to="/matkuls" className="hover:text-blue-200 transition text-sm">Matakuliah</Link>
+                                <span className="bg-blue-700 px-3 py-1 rounded text-xs">{user.name}</span>
+                                <button onClick={handleLogout} className="flex items-center hover:text-blue-200 transition text-sm">
+                                    <LogOut size={16} className="mr-1" /> Logout
                                 </button>
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="flex items-center hover:text-blue-200 transition">
-                                    <LogIn size={18} className="mr-1" /> Login
+                                <Link to="/login" className="flex items-center hover:text-blue-200 transition text-sm">
+                                    <LogIn size={16} className="mr-1" /> Login
                                 </Link>
-                                <Link to="/register" className="flex items-center hover:text-blue-200 transition">
-                                    <UserPlus size={18} className="mr-1" /> Register
+                                <Link to="/register" className="flex items-center hover:text-blue-200 transition text-sm">
+                                    <UserPlus size={16} className="mr-1" /> Register
                                 </Link>
                             </>
                         )}
@@ -66,7 +70,7 @@ const Layout = ({ children, user, setUser }) => {
             <main className="container mx-auto p-4 flex-grow">
                 {children}
             </main>
-            <footer className="bg-white border-t p-4 text-center text-gray-500 text-sm">
+            <footer className="bg-white border-t p-4 text-center text-gray-500 text-xs">
                 &copy; 2026 Sistem Akademik - PABP Project
             </footer>
         </div>
@@ -102,23 +106,23 @@ const Login = ({ setUser }) => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
+        <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded-lg shadow-md border border-gray-100">
             <h2 className="text-2xl font-bold mb-6 text-center text-blue-600 flex items-center justify-center">
                 <LogIn className="mr-2" /> Login
             </h2>
-            {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
+            {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm border border-red-100">{error}</div>}
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-gray-700 font-medium mb-1">Email</label>
+                    <label className="block text-gray-700 font-medium mb-1 text-sm">Email</label>
                     <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required 
-                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none transition" />
                 </div>
                 <div>
-                    <label className="block text-gray-700 font-medium mb-1">Password</label>
+                    <label className="block text-gray-700 font-medium mb-1 text-sm">Password</label>
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
-                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none transition" />
                 </div>
-                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 transition">
+                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 transition shadow-sm mt-2">
                     Sign In
                 </button>
             </form>
@@ -136,48 +140,51 @@ const Register = ({ setUser }) => {
         setErrors({});
         try {
             await axios.post('/auth/register', formData);
-            // After register, let's login
             const response = await axios.post('/auth/login', { email: formData.email, password: formData.password });
             localStorage.setItem('token', response.data.access_token);
             setUser(response.data.user);
             navigate('/matkuls');
         } catch (err) {
             if (err.response && err.response.data) {
-                setErrors(JSON.parse(err.response.data));
+                try {
+                    setErrors(JSON.parse(err.response.data));
+                } catch(e) {
+                    setErrors(err.response.data);
+                }
             }
         }
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
+        <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded-lg shadow-md border border-gray-100">
             <h2 className="text-2xl font-bold mb-6 text-center text-blue-600 flex items-center justify-center">
                 <UserPlus className="mr-2" /> Register
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-gray-700 font-medium mb-1">Name</label>
+                    <label className="block text-gray-700 font-medium mb-1 text-sm">Name</label>
                     <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required 
-                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none transition" />
                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name[0]}</p>}
                 </div>
                 <div>
-                    <label className="block text-gray-700 font-medium mb-1">Email</label>
+                    <label className="block text-gray-700 font-medium mb-1 text-sm">Email</label>
                     <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required
-                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none transition" />
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email[0]}</p>}
                 </div>
                 <div>
-                    <label className="block text-gray-700 font-medium mb-1">Password</label>
+                    <label className="block text-gray-700 font-medium mb-1 text-sm">Password</label>
                     <input type="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} required
-                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none transition" />
                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password[0]}</p>}
                 </div>
                 <div>
-                    <label className="block text-gray-700 font-medium mb-1">Confirm Password</label>
+                    <label className="block text-gray-700 font-medium mb-1 text-sm">Confirm Password</label>
                     <input type="password" value={formData.password_confirmation} onChange={(e) => setFormData({...formData, password_confirmation: e.target.value})} required
-                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none transition" />
                 </div>
-                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 transition">
+                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 transition shadow-sm mt-2">
                     Sign Up
                 </button>
             </form>
@@ -216,46 +223,46 @@ const MatkulList = () => {
         }
     };
 
-    if (loading) return <div className="text-center py-10">Loading...</div>;
+    if (loading) return <div className="text-center py-20 text-blue-600">Loading data...</div>;
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-blue-600 flex items-center">
                     <BookOpen className="mr-2" /> Daftar Mata Kuliah
                 </h2>
-                <Link to="/matkuls/create" className="bg-green-600 text-white px-4 py-2 rounded flex items-center hover:bg-green-700 transition">
-                    <Plus size={18} className="mr-1" /> Tambah
+                <Link to="/matkuls/create" className="bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center hover:bg-green-700 transition shadow-sm">
+                    <Plus size={16} className="mr-1" /> Tambah
                 </Link>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-100 border-b">
-                            <th className="p-3 font-semibold">Kode</th>
-                            <th className="p-3 font-semibold">Nama</th>
-                            <th className="p-3 font-semibold">Jurusan</th>
-                            <th className="p-3 font-semibold text-center">Aksi</th>
+                        <tr className="bg-gray-50 border-b">
+                            <th className="p-3 font-semibold text-gray-600 text-sm">Kode</th>
+                            <th className="p-3 font-semibold text-gray-600 text-sm">Nama</th>
+                            <th className="p-3 font-semibold text-gray-600 text-sm">Jurusan</th>
+                            <th className="p-3 font-semibold text-gray-600 text-sm text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         {matkuls.length > 0 ? matkuls.map((m) => (
-                            <tr key={m.id} className="border-b hover:bg-gray-50">
-                                <td className="p-3">{m.kode}</td>
-                                <td className="p-3">{m.nama}</td>
-                                <td className="p-3">{m.jurusan || '-'}</td>
-                                <td className="p-3 text-center space-x-2">
-                                    <button onClick={() => navigate(`/matkuls/edit/${m.id}`)} className="text-blue-600 hover:text-blue-800">
-                                        <Edit size={18} />
+                            <tr key={m.id} className="border-b hover:bg-blue-50/30 transition">
+                                <td className="p-3 text-sm">{m.kode}</td>
+                                <td className="p-3 text-sm font-medium">{m.nama}</td>
+                                <td className="p-3 text-sm text-gray-500">{m.jurusan || '-'}</td>
+                                <td className="p-3 text-center space-x-3">
+                                    <button onClick={() => navigate(`/matkuls/edit/${m.id}`)} className="text-blue-500 hover:text-blue-700 transition">
+                                        <Edit size={16} />
                                     </button>
-                                    <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-800">
-                                        <Trash2 size={18} />
+                                    <button onClick={() => handleDelete(m.id)} className="text-red-400 hover:text-red-600 transition">
+                                        <Trash2 size={16} />
                                     </button>
                                 </td>
                             </tr>
                         )) : (
                             <tr>
-                                <td colSpan="4" className="p-10 text-center text-gray-500 italic">Belum ada data mata kuliah.</td>
+                                <td colSpan="4" className="p-10 text-center text-gray-400 italic text-sm">Belum ada data mata kuliah.</td>
                             </tr>
                         )}
                     </tbody>
@@ -273,7 +280,7 @@ const MatkulForm = ({ isEdit }) => {
 
     useEffect(() => {
         if (isEdit && id) {
-            axios.get(`/matkuls/${id}`).then(res => setFormData(res.data));
+            axios.get(`/matkuls/${id}`).then(res => setFormData(res.data)).catch(() => navigate('/matkuls'));
         }
     }, [isEdit, id]);
 
@@ -295,34 +302,34 @@ const MatkulForm = ({ isEdit }) => {
     };
 
     return (
-        <div className="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <div className="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md border border-gray-100">
             <h2 className="text-2xl font-bold mb-6 text-blue-600 flex items-center">
                 {isEdit ? <Edit className="mr-2" /> : <Plus className="mr-2" />} 
                 {isEdit ? 'Edit Mata Kuliah' : 'Tambah Mata Kuliah'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-gray-700 font-medium mb-1">Kode</label>
+                    <label className="block text-gray-700 font-medium mb-1 text-sm">Kode</label>
                     <input type="text" value={formData.kode} onChange={(e) => setFormData({...formData, kode: e.target.value})} required 
-                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none transition" />
                     {errors.kode && <p className="text-red-500 text-xs mt-1">{errors.kode[0]}</p>}
                 </div>
                 <div>
-                    <label className="block text-gray-700 font-medium mb-1">Nama</label>
+                    <label className="block text-gray-700 font-medium mb-1 text-sm">Nama</label>
                     <input type="text" value={formData.nama} onChange={(e) => setFormData({...formData, nama: e.target.value})} required
-                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none transition" />
                     {errors.nama && <p className="text-red-500 text-xs mt-1">{errors.nama[0]}</p>}
                 </div>
                 <div>
-                    <label className="block text-gray-700 font-medium mb-1">Jurusan</label>
+                    <label className="block text-gray-700 font-medium mb-1 text-sm">Jurusan</label>
                     <input type="text" value={formData.jurusan} onChange={(e) => setFormData({...formData, jurusan: e.target.value})}
-                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                           className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none transition" />
                 </div>
                 <div className="flex space-x-4 pt-4">
-                    <button type="submit" className="flex-grow bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 transition">
+                    <button type="submit" className="flex-grow bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 transition shadow-sm">
                         Simpan
                     </button>
-                    <button type="button" onClick={() => navigate('/matkuls')} className="bg-gray-300 text-gray-700 py-2 px-6 rounded font-bold hover:bg-gray-400 transition">
+                    <button type="button" onClick={() => navigate('/matkuls')} className="bg-gray-100 text-gray-600 py-2 px-6 rounded font-bold hover:bg-gray-200 transition">
                         Batal
                     </button>
                 </div>
@@ -353,7 +360,7 @@ const App = () => {
         checkAuth();
     }, []);
 
-    if (loading) return null;
+    if (loading) return <div className="flex items-center justify-center min-h-screen bg-gray-50"><div className="text-blue-600 font-bold text-xl animate-pulse">Inisialisasi Sistem...</div></div>;
 
     return (
         <Router>
@@ -371,4 +378,9 @@ const App = () => {
     );
 };
 
-export default App;
+// --- Mount App ---
+const container = document.getElementById('app');
+if (container) {
+    const root = createRoot(container);
+    root.render(<App />);
+}
