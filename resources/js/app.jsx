@@ -375,25 +375,25 @@ const MatkulForm = ({ isEdit }) => {
                 <form onSubmit={handleSubmit} className="p-10 space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Course Code</label>
+                            <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Kode Mata Kuliah</label>
                             <input type="text" value={formData.kode} onChange={e => setFormData({...formData, kode: e.target.value})} required 
                                 className={`w-full bg-slate-50 border ${errors.kode ? 'border-red-300 ring-4 ring-red-50' : 'border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'} rounded-2xl py-4 px-6 text-sm outline-none transition-all font-bold`} 
-                                placeholder="e.g. CS101" />
+                                placeholder="Misal: IF101" />
                             {errors.kode && <p className="text-red-500 text-[10px] font-bold uppercase mt-2">{errors.kode[0]}</p>}
                         </div>
                         <div>
-                            <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Major / Department</label>
+                            <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Jurusan</label>
                             <input type="text" value={formData.jurusan} onChange={e => setFormData({...formData, jurusan: e.target.value})} required
                                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" 
-                                placeholder="e.g. Informatics" />
+                                placeholder="Misal: Teknik Informatika" />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Full Course Name</label>
+                        <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Nama Mata Kuliah</label>
                         <input type="text" value={formData.nama} onChange={e => setFormData({...formData, nama: e.target.value})} required
                             className={`w-full bg-slate-50 border ${errors.nama ? 'border-red-300 ring-4 ring-red-50' : 'border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'} rounded-2xl py-4 px-6 text-sm outline-none transition-all font-bold`} 
-                            placeholder="e.g. Advanced Web Development" />
+                            placeholder="Misal: Pemrograman Web" />
                         {errors.nama && <p className="text-red-500 text-[10px] font-bold uppercase mt-2">{errors.nama[0]}</p>}
                     </div>
 
