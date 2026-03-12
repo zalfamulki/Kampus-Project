@@ -62,7 +62,7 @@ const MainLayout = ({ children, user, setUser }) => {
                             <GraduationCap size={24} strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-xl font-black tracking-tight text-slate-800 leading-none">Siakad</span>
+                            <span className="text-xl font-black tracking-tight text-slate-800 leading-none">Tech</span>
                             <span className="text-[10px] font-bold text-indigo-600 tracking-[0.2em] uppercase">University</span>
                         </div>
                     </div>
@@ -222,16 +222,6 @@ const Profile = ({ user, setUser }) => {
                                 {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.email[0]}</p>}
                             </div>
 
-                            <div className="pt-4 border-t border-slate-50">
-                                <label className="block text-slate-500 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Kata Sandi Baru (Kosongkan jika tidak ingin mengubah)</label>
-                                <div className="relative">
-                                    <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} 
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" placeholder="••••••••" />
-                                    <Key size={18} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300" />
-                                </div>
-                                {errors.password && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.password[0]}</p>}
-                            </div>
-
                             <div className="pt-4">
                                 <button type="submit" disabled={loading}
                                     className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center justify-center">
@@ -247,6 +237,23 @@ const Profile = ({ user, setUser }) => {
 };
 
 // --- Dashboard Component ---
+
+const StatCard = ({ title, value, icon: Icon, color, trend, trendUp }) => (
+    <div className="bg-white p-7 rounded-[24px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+        <div className="flex justify-between items-center mb-6">
+            <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center text-white shadow-lg`}>
+                <Icon size={24} />
+            </div>
+            {trend && (
+                <div className={`flex items-center px-2 py-1 rounded-lg text-[10px] font-bold ${trendUp ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                    <TrendingUp size={12} className={`mr-1 ${!trendUp && 'rotate-180'}`} /> {trend}%
+                </div>
+            )}
+        </div>
+        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{title}</p>
+        <h3 className="text-3xl font-black text-slate-800 mt-2 tracking-tight">{value}</h3>
+    </div>
+);
 
 const Dashboard = ({ user }) => (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -293,23 +300,6 @@ const Dashboard = ({ user }) => (
                  <Link to="/schedule" className="text-indigo-600 text-xs font-black uppercase tracking-widest hover:underline">Lihat Kalender Lengkap</Link>
             </div>
         </div>
-    </div>
-);
-
-const StatCard = ({ title, value, icon: Icon, color, trend, trendUp }) => (
-    <div className="bg-white p-7 rounded-[24px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-        <div className="flex justify-between items-center mb-6">
-            <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center text-white shadow-lg`}>
-                <Icon size={24} />
-            </div>
-            {trend && (
-                <div className={`flex items-center px-2 py-1 rounded-lg text-[10px] font-bold ${trendUp ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                    <TrendingUp size={12} className={`mr-1 ${!trendUp && 'rotate-180'}`} /> {trend}%
-                </div>
-            )}
-        </div>
-        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{title}</p>
-        <h3 className="text-3xl font-black text-slate-800 mt-2 tracking-tight">{value}</h3>
     </div>
 );
 
@@ -428,15 +418,116 @@ const MatkulList = ({ user }) => {
     );
 };
 
-// --- Student & Lecturer List (Simplified for brevity) ---
-
-const ResourceList = ({ title, icon: Icon, endpoint, codeKey, nameKey, role, isAdmin }) => {
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+const MatkulForm = ({ isEdit }) => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({ kode: '', nama: '', jurusan: '' });
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        axios.get(`/${endpoint}`).then(res => setItems(res.data)).finally(() => setLoading(false));
+        if (isEdit && id) {
+            axios.get(`/matkuls/${id}`).then(res => setFormData(res.data)).catch(() => navigate('/matkuls'));
+        }
+    }, [isEdit, id]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setErrors({});
+        setLoading(true);
+        try {
+            if (isEdit) await axios.put(`/matkuls/${id}`, formData);
+            else await axios.post('/matkuls', formData);
+            navigate('/matkuls');
+        } catch (err) {
+            if (err.response && err.response.data) setErrors(err.response.data);
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="max-w-2xl mx-auto animate-in slide-in-from-top-4 duration-500">
+            <button onClick={() => navigate('/matkuls')} className="flex items-center text-slate-400 hover:text-indigo-600 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
+                <ArrowLeft size={16} className="mr-2" /> Kembali ke Daftar
+            </button>
+
+            <div className="bg-white rounded-[32px] border border-slate-100 shadow-xl overflow-hidden">
+                <div className="p-10 bg-slate-900 text-white relative">
+                    <h2 className="text-3xl font-black tracking-tight">{isEdit ? 'Edit Mata Kuliah' : 'Tambah Mata Kuliah'}</h2>
+                    <p className="text-slate-400 font-medium mt-1">Masukkan detail informasi mata kuliah dengan benar.</p>
+                    <BookOpen size={100} className="absolute top-1/2 -translate-y-1/2 right-10 text-white/5" />
+                </div>
+                
+                <form onSubmit={handleSubmit} className="p-10 space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Kode Mata Kuliah</label>
+                            <input type="text" value={formData.kode} onChange={e => setFormData({...formData, kode: e.target.value})} required 
+                                className={`w-full bg-slate-50 border ${errors.kode ? 'border-red-300 ring-4 ring-red-50' : 'border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'} rounded-2xl py-4 px-6 text-sm outline-none transition-all font-bold`} 
+                                placeholder="Misal: IF101" />
+                            {errors.kode && <p className="text-red-500 text-[10px] font-bold uppercase mt-2">{errors.kode[0]}</p>}
+                        </div>
+                        <div>
+                            <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Jurusan</label>
+                            <input type="text" value={formData.jurusan} onChange={e => setFormData({...formData, jurusan: e.target.value})} required
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" 
+                                placeholder="Misal: Teknik Informatika" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Nama Mata Kuliah</label>
+                        <input type="text" value={formData.nama} onChange={e => setFormData({...formData, nama: e.target.value})} required
+                            className={`w-full bg-slate-50 border ${errors.nama ? 'border-red-300 ring-4 ring-red-50' : 'border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'} rounded-2xl py-4 px-6 text-sm outline-none transition-all font-bold`} 
+                            placeholder="Misal: Pemrograman Web" />
+                        {errors.nama && <p className="text-red-500 text-[10px] font-bold uppercase mt-2">{errors.nama[0]}</p>}
+                    </div>
+
+                    <div className="pt-6 flex gap-4">
+                        <button type="submit" disabled={loading}
+                            className="flex-grow bg-indigo-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center justify-center">
+                            {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (isEdit ? 'Update Perubahan' : 'Simpan Mata Kuliah')}
+                        </button>
+                        <button type="button" onClick={() => navigate('/matkuls')} className="bg-slate-100 text-slate-600 px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+// --- Student & Lecturer List ---
+
+const ResourceList = ({ title, icon: Icon, endpoint, codeKey, nameKey, isAdmin }) => {
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get(`/${endpoint}`);
+            setItems(res.data);
+        } catch (e) {}
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchData();
     }, [endpoint]);
+
+    const handleDelete = async (id) => {
+        if (confirm('Hapus data ini?')) {
+            try {
+                await axios.delete(`/${endpoint}/${id}`);
+                fetchData();
+            } catch (e) {
+                alert('Gagal menghapus data');
+            }
+        }
+    };
 
     if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div></div>;
 
@@ -448,7 +539,7 @@ const ResourceList = ({ title, icon: Icon, endpoint, codeKey, nameKey, role, isA
                     <p className="text-slate-500 font-medium">Manajemen data {title.toLowerCase()} universitas.</p>
                 </div>
                 {isAdmin && (
-                    <button className="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center shadow-xl shadow-indigo-100">
+                    <button onClick={() => navigate(`/${endpoint}/create`)} className="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition">
                         <Plus size={18} className="mr-2" /> Tambah Data
                     </button>
                 )}
@@ -472,8 +563,8 @@ const ResourceList = ({ title, icon: Icon, endpoint, codeKey, nameKey, role, isA
                                 {isAdmin && (
                                     <td className="px-8 py-6 text-center">
                                         <div className="flex justify-center gap-2">
-                                            <button className="p-2 text-slate-400 hover:text-indigo-600"><Edit size={16} /></button>
-                                            <button className="p-2 text-slate-400 hover:text-red-600"><Trash2 size={16} /></button>
+                                            <button onClick={() => navigate(`/${endpoint}/edit/${item.id}`)} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"><Edit size={16} /></button>
+                                            <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
                                         </div>
                                     </td>
                                 )}
@@ -488,19 +579,95 @@ const ResourceList = ({ title, icon: Icon, endpoint, codeKey, nameKey, role, isA
     );
 };
 
+const ResourceForm = ({ endpoint, title, codeKey, nameKey, extraKey, extraLabel, isEdit }) => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({ [codeKey]: '', [nameKey]: '', email: '', [extraKey]: '' });
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (isEdit && id) {
+            axios.get(`/${endpoint}/${id}`).then(res => setFormData(res.data)).catch(() => navigate(`/${endpoint}`));
+        }
+    }, [isEdit, id]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setErrors({});
+        setLoading(true);
+        try {
+            if (isEdit) await axios.put(`/${endpoint}/${id}`, formData);
+            else await axios.post(`/${endpoint}`, formData);
+            navigate(`/${endpoint === 'mahasiswas' ? 'students' : 'lecturers'}`);
+        } catch (err) {
+            if (err.response && err.response.data) setErrors(err.response.data);
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="max-w-2xl mx-auto animate-in slide-in-from-top-4 duration-500">
+            <button onClick={() => navigate(`/${endpoint === 'mahasiswas' ? 'students' : 'lecturers'}`)} className="flex items-center text-slate-400 hover:text-indigo-600 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
+                <ArrowLeft size={16} className="mr-2" /> Kembali ke Daftar
+            </button>
+
+            <div className="bg-white rounded-[32px] border border-slate-100 shadow-xl overflow-hidden">
+                <div className="p-10 bg-slate-900 text-white relative">
+                    <h2 className="text-3xl font-black tracking-tight">{isEdit ? `Edit ${title}` : `Tambah ${title}`}</h2>
+                    <p className="text-slate-400 font-medium mt-1">Masukkan detail informasi {title.toLowerCase()} dengan benar.</p>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="p-10 space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">{codeKey.toUpperCase()}</label>
+                            <input type="text" value={formData[codeKey]} onChange={e => setFormData({...formData, [codeKey]: e.target.value})} required 
+                                className={`w-full bg-slate-50 border ${errors[codeKey] ? 'border-red-300 ring-4 ring-red-50' : 'border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'} rounded-2xl py-4 px-6 text-sm outline-none transition-all font-bold`} />
+                            {errors[codeKey] && <p className="text-red-500 text-[10px] font-bold uppercase mt-2">{errors[codeKey][0]}</p>}
+                        </div>
+                        <div>
+                            <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">EMAIL</label>
+                            <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">NAMA LENGKAP</label>
+                        <input type="text" value={formData[nameKey]} onChange={e => setFormData({...formData, [nameKey]: e.target.value})} required
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
+                    </div>
+
+                    <div>
+                        <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">{extraLabel.toUpperCase()}</label>
+                        <input type="text" value={formData[extraKey]} onChange={e => setFormData({...formData, [extraKey]: e.target.value})}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
+                    </div>
+
+                    <div className="pt-6 flex gap-4">
+                        <button type="submit" disabled={loading}
+                            className="flex-grow bg-indigo-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center justify-center">
+                            {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (isEdit ? 'Update Perubahan' : `Simpan ${title}`)}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
 // --- KRS Logic ---
 
 const KRS = ({ user }) => {
     const isAdmin = user?.role === 'admin';
     const [matkuls, setMatkuls] = useState([]);
     const [selected, setSelected] = useState([]);
-    const [loading, setLoading] = useState(!isAdmin);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!isAdmin) {
-            axios.get('/matkuls').then(res => setMatkuls(res.data)).finally(() => setLoading(false));
-        }
-    }, [isAdmin]);
+        axios.get('/matkuls').then(res => setMatkuls(res.data)).finally(() => setLoading(false));
+    }, []);
 
     const toggleSelect = (id) => {
         if (selected.includes(id)) setSelected(selected.filter(i => i !== id));
@@ -588,6 +755,249 @@ const KRS = ({ user }) => {
     );
 };
 
+// --- Schedule Component ---
+
+const Schedule = () => {
+    const [matkuls, setMatkuls] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        axios.get('/matkuls').then(res => setMatkuls(res.data)).finally(() => setLoading(false));
+    }, []);
+
+    return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div>
+                <h1 className="text-3xl font-black text-slate-800 tracking-tight">Jadwal Kuliah</h1>
+                <p className="text-slate-500 font-medium">Jadwal mata kuliah yang tersedia di semester ini.</p>
+            </div>
+
+            {loading ? <div className="p-20 text-center animate-pulse text-slate-200"><Calendar size={64} className="mx-auto" /></div> : (
+                <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-slate-50/50">
+                                    <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-widest">HARI & WAKTU</th>
+                                    <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-widest">MATA KULIAH</th>
+                                    <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-widest">RUANGAN</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {matkuls.length > 0 ? matkuls.map((m, idx) => {
+                                    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+                                    const day = days[idx % days.length];
+                                    const time = `${8 + (idx % 4) * 2}:00 - ${10 + (idx % 4) * 2}:00`;
+                                    return (
+                                        <tr key={m.id} className="hover:bg-indigo-50/30 transition-colors">
+                                            <td className="px-8 py-6">
+                                                <div className="flex flex-col">
+                                                    <span className="font-black text-slate-800 text-sm">{day}</span>
+                                                    <span className="text-indigo-600 font-bold text-xs">{time}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex flex-col">
+                                                    <span className="font-black text-slate-800 text-sm">{m.nama}</span>
+                                                    <span className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">{m.kode}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-xs font-bold">R. {101 + idx}</span>
+                                            </td>
+                                        </tr>
+                                    );
+                                }) : (
+                                    <tr><td colSpan="3" className="py-20 text-center text-slate-400 font-bold uppercase text-xs tracking-widest">Belum ada jadwal</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// --- Grades Component ---
+
+const Grades = ({ user }) => {
+    const isAdmin = user?.role === 'admin';
+    const [mahasiswas, setMahasiswas] = useState([]);
+    const [matkuls, setMatkuls] = useState([]);
+    const [grades, setGrades] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedMahasiswa, setSelectedMahasiswa] = useState(null);
+    const [formData, setFormData] = useState({ matkul_id: '', nilai: '' });
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            if (isAdmin) {
+                const [mRes, mtRes, gRes] = await Promise.all([
+                    axios.get('/mahasiswas'),
+                    axios.get('/matkuls'),
+                    axios.get('/grades')
+                ]);
+                setMahasiswas(mRes.data);
+                setMatkuls(mtRes.data);
+                setGrades(gRes.data);
+            } else {
+                // Find student ID by looking at mahasiswas table for matching name/email if possible
+                // For now, let's assume we can fetch by current user info if matched
+                const mRes = await axios.get('/mahasiswas');
+                const student = mRes.data.find(m => m.nama === user.name || m.email === user.email);
+                if (student) {
+                    const gRes = await axios.get(`/grades/mahasiswa/${student.id}`);
+                    setGrades(gRes.data);
+                }
+            }
+        } catch (e) {}
+        setLoading(false);
+    };
+
+    useEffect(() => { fetchData(); }, [isAdmin, user]);
+
+    const handleSaveGrade = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('/grades', {
+                mahasiswa_id: selectedMahasiswa.id,
+                matkul_id: formData.matkul_id,
+                nilai: formData.nilai
+            });
+            alert('Nilai berhasil disimpan!');
+            fetchData();
+            setFormData({ matkul_id: '', nilai: '' });
+        } catch (e) { alert('Gagal menyimpan nilai'); }
+    };
+
+    if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div></div>;
+
+    if (!isAdmin) return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div>
+                <h1 className="text-3xl font-black text-slate-800 tracking-tight">Transkrip Nilai</h1>
+                <p className="text-slate-500 font-medium">Hasil studi akademik Anda selama ini.</p>
+            </div>
+            <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+                <table className="w-full text-left">
+                    <thead>
+                        <tr className="bg-slate-50/50">
+                            <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-widest">KODE</th>
+                            <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-widest">MATA KULIAH</th>
+                            <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-widest text-center">NILAI</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                        {grades.length > 0 ? grades.map(g => (
+                            <tr key={g.id}>
+                                <td className="px-8 py-6 font-bold text-indigo-600">{g.matkul?.kode}</td>
+                                <td className="px-8 py-6 font-bold text-slate-800">{g.matkul?.nama}</td>
+                                <td className="px-8 py-6 text-center">
+                                    <span className="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center mx-auto font-black">{g.nilai}</span>
+                                </td>
+                            </tr>
+                        )) : (
+                            <tr><td colSpan="3" className="py-20 text-center text-slate-400 font-bold uppercase text-xs tracking-widest">Belum ada nilai yang keluar</td></tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Manajemen Nilai Mahasiswa</h1>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1 space-y-4">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Daftar Mahasiswa</h3>
+                    <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+                        <div className="max-h-[600px] overflow-y-auto divide-y divide-slate-50">
+                            {mahasiswas.map(m => (
+                                <div key={m.id} onClick={() => setSelectedMahasiswa(m)}
+                                     className={`p-6 cursor-pointer transition-all flex items-center gap-4 ${selectedMahasiswa?.id === m.id ? 'bg-indigo-50 border-l-4 border-indigo-600' : 'hover:bg-slate-50'}`}>
+                                    <img src={`https://ui-avatars.com/api/?name=${m.nama}&background=random`} className="w-10 h-10 rounded-xl" />
+                                    <div>
+                                        <p className="font-black text-slate-800 text-sm leading-none">{m.nama}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 mt-1">{m.nim}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="lg:col-span-2 space-y-8">
+                    {selectedMahasiswa ? (
+                        <div className="space-y-8">
+                            <div className="bg-slate-900 rounded-[32px] p-8 text-white flex justify-between items-center">
+                                <div>
+                                    <h2 className="text-2xl font-black">{selectedMahasiswa.nama}</h2>
+                                    <p className="text-slate-400 font-medium">{selectedMahasiswa.nim} • {selectedMahasiswa.jurusan}</p>
+                                </div>
+                                <GraduationCap size={48} className="text-white/10" />
+                            </div>
+
+                            <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8">
+                                <h3 className="font-black text-slate-800 mb-6 flex items-center gap-2"><Plus size={20} className="text-indigo-600" /> Input Nilai Baru</h3>
+                                <form onSubmit={handleSaveGrade} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                                    <div className="md:col-span-1">
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Mata Kuliah</label>
+                                        <select value={formData.matkul_id} onChange={e => setFormData({...formData, matkul_id: e.target.value})} required
+                                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-3.5 px-6 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10">
+                                            <option value="">Pilih Matkul</option>
+                                            {matkuls.map(m => <option key={m.id} value={m.id}>{m.nama}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Grade (A-E)</label>
+                                        <input type="text" value={formData.nilai} onChange={e => setFormData({...formData, nilai: e.target.value.toUpperCase()})} required maxLength="2" placeholder="Mis: A"
+                                               className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-3.5 px-6 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10" />
+                                    </div>
+                                    <button type="submit" className="bg-indigo-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition shadow-lg">Simpan Nilai</button>
+                                </form>
+                            </div>
+
+                            <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-slate-50/50">
+                                            <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-widest">MATA KULIAH</th>
+                                            <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-widest text-center">NILAI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {grades.filter(g => g.mahasiswa_id === selectedMahasiswa.id).length > 0 ? 
+                                            grades.filter(g => g.mahasiswa_id === selectedMahasiswa.id).map(g => (
+                                            <tr key={g.id}>
+                                                <td className="px-8 py-6 font-bold text-slate-800">{g.matkul?.nama}</td>
+                                                <td className="px-8 py-6 text-center">
+                                                    <span className="bg-indigo-50 text-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center mx-auto font-black">{g.nilai}</span>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan="2" className="py-20 text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">Belum ada nilai untuk mahasiswa ini</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-20 text-center">
+                            <Users size={80} className="mx-auto text-indigo-100 mb-6" />
+                            <h2 className="text-2xl font-black text-slate-800">Pilih Mahasiswa</h2>
+                            <p className="text-slate-400 font-medium">Silakan pilih mahasiswa dari daftar di samping untuk mengelola nilai.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- Auth Module ---
 
 const Login = ({ setUser }) => {
@@ -621,16 +1031,12 @@ const Login = ({ setUser }) => {
                         <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-2xl shadow-indigo-500/20">
                             <GraduationCap size={28} strokeWidth={2.5} />
                         </div>
-                        <span className="text-2xl font-black tracking-tighter uppercase">Siakad PRO</span>
+                        <span className="text-2xl font-black tracking-tighter uppercase">Tech University</span>
                     </div>
                     <div className="max-w-xl">
                         <h2 className="text-6xl font-black text-white leading-tight tracking-tighter mb-8">Modern Solution for <span className="text-indigo-500">Academic</span> Management.</h2>
                         <p className="text-xl text-slate-400 font-medium leading-relaxed">Satu platform terintegrasi untuk mengelola data mahasiswa, kurikulum, dan nilai secara efisien dan aman.</p>
                     </div>
-                </div>
-                <div className="relative z-10 flex gap-10">
-                    <div><p className="text-4xl font-black text-white">12k+</p><p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-2">Active Users</p></div>
-                    <div><p className="text-4xl font-black text-white">99.9%</p><p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-2">Server Uptime</p></div>
                 </div>
             </div>
 
@@ -664,7 +1070,7 @@ const Login = ({ setUser }) => {
 };
 
 const Register = () => {
-    const [formData, setFormData] = useState({ name: '', username: '', email: '', password: '' });
+    const [formData, setFormData] = useState({ name: '', username: '', email: '', password: '', role: 'user' });
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
@@ -684,45 +1090,90 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-10">
-            <div className="max-w-md w-full bg-white rounded-[40px] shadow-2xl shadow-slate-200 overflow-hidden animate-in zoom-in duration-500">
-                <div className="p-12 bg-slate-900 text-white relative">
-                    <h2 className="text-3xl font-black tracking-tight">Buat Akun</h2>
-                    <p className="text-slate-400 font-medium mt-1">Daftar sebagai mahasiswa baru.</p>
-                    <GraduationCap size={80} className="absolute right-10 top-1/2 -translate-y-1/2 text-white/5" />
+        <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-6 lg:p-10">
+            <div className="max-w-5xl w-full bg-white rounded-[48px] shadow-2xl shadow-slate-200 overflow-hidden flex flex-col lg:flex-row animate-in zoom-in duration-700">
+                <div className="lg:w-2/5 bg-indigo-600 p-12 lg:p-16 text-white flex flex-col justify-between relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-full">
+                         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-white/10 rounded-full blur-3xl"></div>
+                         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-400/20 rounded-full blur-3xl"></div>
+                    </div>
+                    <div className="relative z-10">
+                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-10 backdrop-blur-md border border-white/30 shadow-xl">
+                            <GraduationCap size={32} strokeWidth={2.5} />
+                        </div>
+                        <h2 className="text-4xl font-black leading-tight tracking-tight mb-6">Mulai Perjalanan Akademik Anda.</h2>
+                        <p className="text-indigo-100 text-lg font-medium leading-relaxed opacity-90">Bergabunglah dengan ribuan mahasiswa lainnya dalam ekosistem digital kampus yang modern dan terintegrasi.</p>
+                    </div>
+                    <div className="relative z-10 mt-12">
+                        <div className="flex -space-x-3 mb-4">
+                            {[1,2,3,4].map(i => (
+                                <img key={i} className="w-10 h-10 rounded-full border-4 border-indigo-600 shadow-lg" src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" />
+                            ))}
+                            <div className="w-10 h-10 rounded-full bg-indigo-500 border-4 border-indigo-600 flex items-center justify-center text-[10px] font-bold shadow-lg">+2k</div>
+                        </div>
+                        <p className="text-indigo-200 text-xs font-bold uppercase tracking-widest">Terpercaya di 50+ Universitas</p>
+                    </div>
                 </div>
-                <form onSubmit={handleSubmit} className="p-12 space-y-6">
-                    <div>
-                        <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Nama Lengkap</label>
-                        <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required 
-                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
-                        {errors.name && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.name[0]}</p>}
+
+                <div className="flex-1 p-12 lg:p-16">
+                    <div className="max-w-md mx-auto">
+                        <h3 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Buat Akun Baru</h3>
+                        <p className="text-slate-500 font-medium mb-10">Lengkapi formulir di bawah untuk mendaftar.</p>
+                        
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Nama Lengkap</label>
+                                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required 
+                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="John Doe" />
+                                    {errors.name && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.name[0]}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Username</label>
+                                    <input type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} required 
+                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="johndoe123" />
+                                    {errors.username && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.username[0]}</p>}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Alamat Email</label>
+                                <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required 
+                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="hello@example.com" />
+                                {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.email[0]}</p>}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Kata Sandi</label>
+                                    <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required 
+                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="••••••••" />
+                                    {errors.password && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.password[0]}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Daftar Sebagai</label>
+                                    <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} required
+                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold">
+                                        <option value="user">Mahasiswa</option>
+                                        <option value="admin">Administrator</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="pt-4">
+                                <button type="submit" disabled={loading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center justify-center group">
+                                    {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (
+                                        <>Mendaftar Sekarang <ChevronRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" /></>
+                                    )}
+                                </button>
+                            </div>
+                            
+                            <p className="text-center text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] pt-4">
+                                Sudah punya akun? <Link to="/login" className="text-indigo-600 hover:underline">Masuk di sini</Link>
+                            </p>
+                        </form>
                     </div>
-                    <div>
-                        <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Username Unik</label>
-                        <input type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} required 
-                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
-                        {errors.username && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.username[0]}</p>}
-                    </div>
-                    <div>
-                        <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Email</label>
-                        <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required 
-                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
-                        {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.email[0]}</p>}
-                    </div>
-                    <div>
-                        <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Kata Sandi</label>
-                        <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required 
-                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
-                        {errors.password && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.password[0]}</p>}
-                    </div>
-                    <button type="submit" disabled={loading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center justify-center">
-                        {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Daftar Sekarang'}
-                    </button>
-                    <p className="text-center text-slate-400 font-bold text-xs uppercase tracking-widest pt-4">
-                        Punya akun? <Link to="/login" className="text-indigo-600">Login</Link>
-                    </p>
-                </form>
+                </div>
             </div>
         </div>
     );
@@ -773,12 +1224,17 @@ const App = () => {
                         <Routes>
                             <Route path="/dashboard" element={<Dashboard user={user} />} />
                             <Route path="/profile" element={<Profile user={user} setUser={setUser} />} />
-                            <Route path="/schedule" element={<div className="bg-white p-20 rounded-[40px] text-center border border-slate-100 shadow-sm"><Calendar size={80} className="mx-auto text-indigo-100 mb-6" /><h2 className="text-2xl font-black text-slate-800">Kalender Akademik</h2><p className="text-slate-400 font-medium">Fitur jadwal kuliah sedang dalam tahap sinkronisasi data.</p></div>} />
-                            <Route path="/krs" element={<KRS user={user} />} />
-                            <Route path="/grades" element={<div className="bg-white p-20 rounded-[40px] text-center border border-slate-100 shadow-sm"><GraduationCap size={80} className="mx-auto text-indigo-100 mb-6" /><h2 className="text-2xl font-black text-slate-800">Pusat Nilai</h2><p className="text-slate-400 font-medium">Data transkrip nilai akan muncul setelah semester berakhir.</p></div>} />
-                            
                             <Route path="/students" element={<ResourceList title="Data Mahasiswa" icon={Users} endpoint="mahasiswas" codeKey="nim" nameKey="nama" isAdmin={isAdmin} />} />
+                            <Route path="/mahasiswas/create" element={isAdmin ? <ResourceForm endpoint="mahasiswas" title="Mahasiswa" codeKey="nim" nameKey="nama" extraKey="jurusan" extraLabel="Jurusan" isEdit={false} /> : <Navigate to="/students" />} />
+                            <Route path="/mahasiswas/edit/:id" element={isAdmin ? <ResourceForm endpoint="mahasiswas" title="Mahasiswa" codeKey="nim" nameKey="nama" extraKey="jurusan" extraLabel="Jurusan" isEdit={true} /> : <Navigate to="/students" />} />
+
                             <Route path="/lecturers" element={<ResourceList title="Data Dosen" icon={UserSquare2} endpoint="dosens" codeKey="nidn" nameKey="nama" isAdmin={isAdmin} />} />
+                            <Route path="/dosens/create" element={isAdmin ? <ResourceForm endpoint="dosens" title="Dosen" codeKey="nidn" nameKey="nama" extraKey="departemen" extraLabel="Departemen" isEdit={false} /> : <Navigate to="/lecturers" />} />
+                            <Route path="/dosens/edit/:id" element={isAdmin ? <ResourceForm endpoint="dosens" title="Dosen" codeKey="nidn" nameKey="nama" extraKey="departemen" extraLabel="Departemen" isEdit={true} /> : <Navigate to="/lecturers" />} />
+                            
+                            <Route path="/schedule" element={<Schedule />} />
+                            <Route path="/krs" element={<KRS user={user} />} />
+                            <Route path="/grades" element={<Grades user={user} />} />
                             
                             <Route path="/matkuls" element={<MatkulList user={user} />} />
                             <Route path="/matkuls/create" element={isAdmin ? <MatkulForm isEdit={false} /> : <Navigate to="/matkuls" />} />

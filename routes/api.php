@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\MatkulController;
 use App\Http\Controllers\Api\MahasiswaController;
 use App\Http\Controllers\Api\DosenController;
+use App\Http\Controllers\GradeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,4 +35,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::apiResource('matkuls', MatkulController::class);
     Route::apiResource('mahasiswas', MahasiswaController::class);
     Route::apiResource('dosens', DosenController::class);
+    
+    Route::get('grades', [GradeController::class, 'index']);
+    Route::post('grades', [GradeController::class, 'store']);
+    Route::get('grades/mahasiswa/{id}', [GradeController::class, 'getByMahasiswa']);
 });
