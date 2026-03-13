@@ -39,4 +39,13 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('grades', [GradeController::class, 'index']);
     Route::post('grades', [GradeController::class, 'store']);
     Route::get('grades/mahasiswa/{id}', [GradeController::class, 'getByMahasiswa']);
+
+    // KRS Routes
+    Route::get('krs/status', [\App\Http\Controllers\KrsController::class, 'getStatus']);
+    Route::post('krs/toggle', [\App\Http\Controllers\KrsController::class, 'togglePeriod']);
+    Route::post('krs/submit', [\App\Http\Controllers\KrsController::class, 'submitKrs']);
+    Route::get('krs/my-krs', [\App\Http\Controllers\KrsController::class, 'getMyKrs']);
+    Route::get('krs/pending', [\App\Http\Controllers\KrsController::class, 'getPendingKrs']);
+    Route::post('krs/approve', [\App\Http\Controllers\KrsController::class, 'approveKrs']);
+    Route::get('krs/schedule', [\App\Http\Controllers\KrsController::class, 'getSchedule']);
 });

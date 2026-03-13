@@ -702,40 +702,169 @@ const KRS = ({ user }) => {
     const isAdmin = user?.role === 'admin';
     const [matkuls, setMatkuls] = useState([]);
     const [selected, setSelected] = useState([]);
+    const [myEnrollments, setMyEnrollments] = useState([]);
+    const [pendingKrs, setPendingKrs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [krsStatus, setKrsStatus] = useState({ isOpen: true, semester: '' });
+    const [submitting, setSubmitting] = useState(false);
+
+    const fetchStatus = async () => {
+        try {
+            const res = await axios.get('/krs/status');
+            setKrsStatus(res.data);
+        } catch (e) {}
+    };
+
+    const fetchKrsData = async () => {
+        setLoading(true);
+        try {
+            const [mRes, eRes] = await Promise.all([
+                axios.get('/matkuls'),
+                axios.get('/krs/my-krs')
+            ]);
+            setMatkuls(mRes.data);
+            setMyEnrollments(eRes.data);
+            setSelected(eRes.data.map(e => e.matkul_id));
+        } catch (e) {}
+        setLoading(false);
+    };
+
+    const fetchPendingKrs = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get('/krs/pending');
+            setPendingKrs(res.data);
+        } catch (e) {}
+        setLoading(false);
+    };
 
     useEffect(() => {
-        axios.get('/matkuls').then(res => setMatkuls(res.data)).finally(() => setLoading(false));
-    }, []);
+        fetchStatus();
+        if (isAdmin) fetchPendingKrs();
+        else fetchKrsData();
+    }, [isAdmin]);
+
+    const togglePeriod = async () => {
+        try {
+            const res = await axios.post('/krs/toggle');
+            setKrsStatus(prev => ({ ...prev, isOpen: res.data.isOpen }));
+            alert(res.data.message);
+        } catch (e) { alert('Gagal mengubah status periode'); }
+    };
 
     const toggleSelect = (id) => {
+        if (!krsStatus.isOpen) return;
+        
+        // If already approved, prevent unselecting (or handle as drop request)
+        const enrollment = myEnrollments.find(e => e.matkul_id === id);
+        if (enrollment && enrollment.status === 'approved') {
+            alert('Mata kuliah yang sudah disetujui tidak dapat dibatalkan melalui portal ini.');
+            return;
+        }
+
         if (selected.includes(id)) setSelected(selected.filter(i => i !== id));
         else setSelected([...selected, id]);
     };
 
+    const handleSubmitKrs = async () => {
+        setSubmitting(true);
+        try {
+            await axios.post('/krs/submit', { matkul_ids: selected });
+            alert('KRS Berhasil Diajukan! Menunggu persetujuan admin.');
+            fetchKrsData();
+        } catch (e) { alert('Gagal mengajukan KRS'); }
+        setSubmitting(false);
+    };
+
+    const handleApprove = async (id, action) => {
+        try {
+            await axios.post('/krs/approve', { id, action });
+            fetchPendingKrs();
+        } catch (e) { alert('Gagal memproses persetujuan'); }
+    };
+
     if (isAdmin) return (
         <div className="space-y-8 animate-in fade-in duration-500">
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Sistem KRS (Admin)</h1>
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-black text-slate-800 tracking-tight">Sistem KRS (Admin)</h1>
+                    <p className="text-slate-500 font-medium">Kontrol akses KRS dan validasi pengajuan mahasiswa.</p>
+                </div>
+            </div>
+
             <div className="bg-white p-10 rounded-[32px] border border-slate-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="p-8 bg-indigo-50 rounded-3xl border border-indigo-100">
                         <h4 className="font-black text-indigo-900 mb-2 uppercase text-xs tracking-widest">Periode Aktif</h4>
-                        <p className="text-2xl font-black text-indigo-600">Semester Genap 2026</p>
+                        <p className="text-2xl font-black text-indigo-600">{krsStatus.semester || 'Loading...'}</p>
                     </div>
-                    <div className="p-8 bg-emerald-50 rounded-3xl border border-emerald-100">
-                        <h4 className="font-black text-emerald-900 mb-2 uppercase text-xs tracking-widest">Status Sistem</h4>
-                        <p className="text-2xl font-black text-emerald-600">Terbuka</p>
+                    <div className={`p-8 rounded-3xl border transition-colors ${krsStatus.isOpen ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}>
+                        <h4 className={`font-black mb-2 uppercase text-xs tracking-widest ${krsStatus.isOpen ? 'text-emerald-900' : 'text-red-900'}`}>Status Sistem</h4>
+                        <p className={`text-2xl font-black ${krsStatus.isOpen ? 'text-emerald-600' : 'text-red-600'}`}>
+                            {krsStatus.isOpen ? 'Terbuka' : 'Ditutup'}
+                        </p>
                     </div>
                     <div className="p-8 bg-slate-50 rounded-3xl border border-slate-100 text-center flex flex-col justify-center">
-                        <button className="bg-slate-900 text-white py-3 px-6 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition">Tutup Periode KRS</button>
+                        <button onClick={togglePeriod} 
+                                className={`py-3 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition shadow-lg ${
+                                    krsStatus.isOpen ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-100' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100'
+                                }`}>
+                            {krsStatus.isOpen ? 'Tutup Periode KRS' : 'Buka Periode KRS'}
+                        </button>
                     </div>
                 </div>
                 
                 <div className="mt-12">
-                    <h3 className="text-xl font-black text-slate-800 mb-6 uppercase tracking-tight">Daftar Pengajuan KRS Mahasiswa</h3>
-                    <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-[32px]">
-                        <Users size={48} className="mx-auto text-slate-100 mb-4" />
-                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Tidak ada pengajuan KRS yang perlu divalidasi</p>
+                    <h3 className="text-xl font-black text-slate-800 mb-6 uppercase tracking-tight flex items-center gap-3">
+                        Daftar Pengajuan Pending <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-xs">{pendingKrs.length}</span>
+                    </h3>
+                    
+                    <div className="overflow-x-auto border border-slate-50 rounded-3xl">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-slate-50">
+                                    <th className="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest">Mahasiswa</th>
+                                    <th className="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest">Mata Kuliah</th>
+                                    <th className="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {pendingKrs.length > 0 ? pendingKrs.map(p => (
+                                    <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 text-[10px] font-bold uppercase">
+                                                    {p.mahasiswa?.nama.substring(0, 2)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm text-slate-800">{p.mahasiswa?.nama}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">{p.mahasiswa?.nim}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <p className="font-bold text-sm text-slate-800">{p.matkul?.nama}</p>
+                                            <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{p.matkul?.kode}</p>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex justify-center gap-2">
+                                                <button onClick={() => handleApprove(p.id, 'approved')} className="bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-xl transition shadow-lg shadow-emerald-100"><CheckCircle2 size={16} /></button>
+                                                <button onClick={() => handleApprove(p.id, 'rejected')} className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-xl transition shadow-lg shadow-red-100"><X size={16} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="3" className="py-20 text-center">
+                                            <div className="bg-slate-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-200">
+                                                <Users size={32} />
+                                            </div>
+                                            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Tidak ada pengajuan KRS yang perlu divalidasi</p>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -744,49 +873,84 @@ const KRS = ({ user }) => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-slate-800 tracking-tight">Kontrak KRS</h1>
                     <p className="text-slate-500 font-medium">Pilih mata kuliah yang akan diambil semester ini.</p>
                 </div>
-                <div className="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-xl shadow-indigo-100">
-                    Total: {selected.length} Matkul
-                </div>
+                {!krsStatus.isOpen && (
+                    <div className="bg-red-50 text-red-600 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest border border-red-100 flex items-center gap-2">
+                        <AlertCircle size={16} /> Periode KRS Ditutup
+                    </div>
+                )}
             </div>
 
             <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
-                <div className="p-8 bg-slate-900 text-white flex justify-between items-center">
+                <div className="p-8 bg-slate-900 text-white flex flex-col md:flex-row justify-between items-center gap-6">
                     <div>
                         <h3 className="font-black uppercase tracking-widest text-xs text-slate-400 mb-1">Daftar Mata Kuliah Tersedia</h3>
-                        <p className="text-sm font-medium text-slate-300">Silakan klik untuk memilih atau membatalkan.</p>
+                        <p className="text-sm font-medium text-slate-300">
+                            {krsStatus.isOpen ? 'Silakan klik untuk memilih atau membatalkan.' : 'Hanya melihat daftar kontrak matkul.'}
+                        </p>
                     </div>
-                    <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition shadow-lg" 
-                            disabled={selected.length === 0} onClick={() => alert('KRS Berhasil Disimpan!')}>
-                        Simpan Kontrak Matkul
-                    </button>
+                    {krsStatus.isOpen && (
+                        <button className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition shadow-xl shadow-indigo-500/20 flex items-center justify-center gap-3 disabled:opacity-50" 
+                                disabled={selected.length === 0 || submitting} onClick={handleSubmitKrs}>
+                            {submitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <><CheckCircle2 size={18} /> Simpan Kontrak Matkul</>}
+                        </button>
+                    )}
                 </div>
 
-                {loading ? <div className="p-20 text-center animate-pulse text-slate-200"><BookOpen size={64} className="mx-auto" /></div> : (
-                    <div className="p-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                        {matkuls.map(m => (
-                            <div key={m.id} onClick={() => toggleSelect(m.id)}
-                                 className={`p-6 rounded-2xl cursor-pointer transition-all border-2 flex items-start gap-4 group ${
-                                    selected.includes(m.id) 
-                                    ? 'bg-indigo-50 border-indigo-600 shadow-lg shadow-indigo-50' 
-                                    : 'bg-white border-slate-50 hover:border-indigo-200'
-                                 }`}>
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                                    selected.includes(m.id) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600'
-                                }`}>
-                                    {selected.includes(m.id) ? <CheckCircle2 size={20} /> : <Plus size={20} />}
+                {loading ? <div className="p-40 text-center animate-pulse text-slate-200"><BookOpen size={64} className="mx-auto" /></div> : (
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {matkuls.map(m => {
+                            const enrollment = myEnrollments.find(e => e.matkul_id === m.id);
+                            const isSelected = selected.includes(m.id);
+                            
+                            return (
+                                <div key={m.id} onClick={() => toggleSelect(m.id)}
+                                     className={`p-6 rounded-[28px] transition-all border-2 flex flex-col gap-4 group relative overflow-hidden ${
+                                        isSelected 
+                                        ? (enrollment?.status === 'approved' ? 'bg-emerald-50 border-emerald-500 shadow-emerald-50' : 'bg-indigo-50 border-indigo-600 shadow-lg shadow-indigo-50') 
+                                        : 'bg-white border-slate-50 hover:border-indigo-200'
+                                     } ${!krsStatus.isOpen ? 'cursor-default' : 'cursor-pointer'}`}>
+                                    
+                                    <div className="flex justify-between items-start relative z-10">
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                                            isSelected 
+                                            ? (enrollment?.status === 'approved' ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white') 
+                                            : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600'
+                                        }`}>
+                                            {isSelected ? (enrollment?.status === 'approved' ? <CheckCircle2 size={24} /> : <ClipboardList size={24} />) : <Plus size={24} />}
+                                        </div>
+                                        
+                                        {enrollment && (
+                                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                                enrollment.status === 'approved' ? 'bg-emerald-500 text-white' : 
+                                                enrollment.status === 'rejected' ? 'bg-red-500 text-white' : 'bg-amber-400 text-white'
+                                            }`}>
+                                                {enrollment.status}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="relative z-10">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">{m.kode}</p>
+                                        <h4 className={`text-lg font-black leading-tight transition-colors ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>{m.nama}</h4>
+                                        <div className="flex items-center gap-2 mt-3 text-slate-400">
+                                            <Calendar size={14} />
+                                            <span className="text-xs font-bold uppercase tracking-wide">{m.hari || 'TBA'} • {m.jam_mulai?.substring(0, 5) || 'TBA'}</span>
+                                        </div>
+                                    </div>
+
+                                    {isSelected && enrollment?.status === 'approved' && (
+                                        <div className="absolute -right-4 -bottom-4 text-emerald-100 opacity-20">
+                                            <CheckCircle2 size={100} />
+                                        </div>
+                                    )}
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{m.kode}</p>
-                                    <h4 className={`font-black transition-colors ${selected.includes(m.id) ? 'text-indigo-900' : 'text-slate-700'}`}>{m.nama}</h4>
-                                    <p className="text-xs text-slate-500 font-medium mt-1">{m.jurusan || 'Umum'}</p>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -801,7 +965,7 @@ const Schedule = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('/matkuls').then(res => setMatkuls(res.data)).finally(() => setLoading(false));
+        axios.get('/krs/schedule').then(res => setMatkuls(res.data)).finally(() => setLoading(false));
     }, []);
 
     return (

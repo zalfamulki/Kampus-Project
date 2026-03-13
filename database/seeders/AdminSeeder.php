@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\User;
+use App\Models\Mahasiswa;
+use Illuminate\Support\Facades\Hash;
 
 class AdminSeeder extends Seeder
 {
@@ -12,20 +15,28 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\User::create([
+        User::create([
             'name' => 'Administrator',
             'username' => 'admin',
             'email' => 'admin@gmail.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'password' => Hash::make('password123'),
             'role' => 'admin',
         ]);
         
-        \App\Models\User::create([
+        $user = User::create([
             'name' => 'Reguler User',
             'username' => 'user',
             'email' => 'user@gmail.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'password' => Hash::make('password123'),
             'role' => 'user',
+        ]);
+
+        Mahasiswa::create([
+            'user_id' => $user->id,
+            'nim' => '2201010001',
+            'nama' => 'Reguler User',
+            'email' => 'user@gmail.com',
+            'jurusan' => 'Teknik Informatika'
         ]);
     }
 }
