@@ -164,14 +164,14 @@ const Profile = ({ user, setUser }) => {
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
             <div>
                 <h1 className="text-3xl font-black text-slate-800 tracking-tight">Pengaturan Profil</h1>
-                <p className="text-slate-500 font-medium">Kelola informasi akun dan kata sandi Anda.</p>
+                <p className="text-slate-500 font-medium">Hanya nama yang dapat diubah sesuai kebijakan akademik.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1">
-                    <div className="bg-white rounded-[32px] border border-slate-100 p-8 text-center shadow-sm">
+                    <div className="bg-white rounded-[32px] border border-slate-100 p-8 text-center shadow-sm">        
                         <div className="relative inline-block mb-6">
-                            <img src={`https://ui-avatars.com/api/?name=${user?.name || 'U'}&background=6366f1&color=fff&bold=true&size=128`} 
+                            <img src={`https://ui-avatars.com/api/?name=${user?.name || 'U'}&background=6366f1&color=fff&bold=true&size=128`}
                                  className="w-32 h-32 rounded-[40px] shadow-xl shadow-indigo-100" alt="Profile Large" />
                             <div className="absolute -bottom-2 -right-2 bg-emerald-500 w-8 h-8 rounded-full border-4 border-white"></div>
                         </div>
@@ -191,10 +191,10 @@ const Profile = ({ user, setUser }) => {
                 </div>
 
                 <div className="lg:col-span-2">
-                    <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">        
                         <form onSubmit={handleSubmit} className="p-10 space-y-6">
                             {message && (
-                                <div className={`p-5 rounded-2xl flex items-center gap-3 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                                <div className={`p-5 rounded-2xl flex items-center gap-3 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>       
                                     {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
                                     <p className="text-sm font-bold">{message.text}</p>
                                 </div>
@@ -203,25 +203,22 @@ const Profile = ({ user, setUser }) => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-slate-500 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Nama Lengkap</label>
-                                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} 
+                                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
                                         className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
                                     {errors.name && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.name[0]}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-slate-500 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Username</label>
-                                    <input type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} 
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
-                                    {errors.username && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.username[0]}</p>}
+                                    <input type="text" value={formData.username} disabled
+                                        className="w-full bg-slate-100 border border-slate-200 rounded-2xl py-4 px-6 text-sm outline-none transition-all font-bold text-slate-400 cursor-not-allowed" />
                                 </div>
                             </div>
 
                             <div>
                                 <label className="block text-slate-500 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Alamat Email</label>
-                                <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} 
-                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" />
-                                {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.email[0]}</p>}
+                                <input type="email" value={formData.email} disabled
+                                    className="w-full bg-slate-100 border border-slate-200 rounded-2xl py-4 px-6 text-sm outline-none transition-all font-bold text-slate-400 cursor-not-allowed" />
                             </div>
-
                             <div className="pt-4">
                                 <button type="submit" disabled={loading}
                                     className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center justify-center">
@@ -421,7 +418,15 @@ const MatkulList = ({ user }) => {
 const MatkulForm = ({ isEdit }) => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ kode: '', nama: '', jurusan: '' });
+    const [formData, setFormData] = useState({ 
+        kode: '', 
+        nama: '', 
+        jurusan: '',
+        hari: '',
+        jam_mulai: '',
+        jam_selesai: '',
+        ruangan: ''
+    });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
@@ -446,7 +451,7 @@ const MatkulForm = ({ isEdit }) => {
     };
 
     return (
-        <div className="max-w-2xl mx-auto animate-in slide-in-from-top-4 duration-500">
+        <div className="max-w-4xl mx-auto animate-in slide-in-from-top-4 duration-500">
             <button onClick={() => navigate('/matkuls')} className="flex items-center text-slate-400 hover:text-indigo-600 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
                 <ArrowLeft size={16} className="mr-2" /> Kembali ke Daftar
             </button>
@@ -454,7 +459,7 @@ const MatkulForm = ({ isEdit }) => {
             <div className="bg-white rounded-[32px] border border-slate-100 shadow-xl overflow-hidden">
                 <div className="p-10 bg-slate-900 text-white relative">
                     <h2 className="text-3xl font-black tracking-tight">{isEdit ? 'Edit Mata Kuliah' : 'Tambah Mata Kuliah'}</h2>
-                    <p className="text-slate-400 font-medium mt-1">Masukkan detail informasi mata kuliah dengan benar.</p>
+                    <p className="text-slate-400 font-medium mt-1">Masukkan detail informasi mata kuliah dan jadwal dengan benar.</p>
                     <BookOpen size={100} className="absolute top-1/2 -translate-y-1/2 right-10 text-white/5" />
                 </div>
                 
@@ -481,6 +486,40 @@ const MatkulForm = ({ isEdit }) => {
                             className={`w-full bg-slate-50 border ${errors.nama ? 'border-red-300 ring-4 ring-red-50' : 'border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'} rounded-2xl py-4 px-6 text-sm outline-none transition-all font-bold`} 
                             placeholder="Misal: Pemrograman Web" />
                         {errors.nama && <p className="text-red-500 text-[10px] font-bold uppercase mt-2">{errors.nama[0]}</p>}
+                    </div>
+
+                    <div className="border-t border-slate-50 pt-8">
+                        <h3 className="text-slate-800 font-black text-sm uppercase tracking-widest mb-6">Informasi Jadwal</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div>
+                                <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Hari</label>
+                                <select value={formData.hari} onChange={e => setFormData({...formData, hari: e.target.value})}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 outline-none">
+                                    <option value="">Pilih Hari</option>
+                                    <option value="Senin">Senin</option>
+                                    <option value="Selasa">Selasa</option>
+                                    <option value="Rabu">Rabu</option>
+                                    <option value="Kamis">Kamis</option>
+                                    <option value="Jumat">Jumat</option>
+                                    <option value="Sabtu">Sabtu</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Jam Mulai</label>
+                                <input type="time" value={formData.jam_mulai} onChange={e => setFormData({...formData, jam_mulai: e.target.value})}
+                                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm font-bold outline-none" />
+                            </div>
+                            <div>
+                                <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Jam Selesai</label>
+                                <input type="time" value={formData.jam_selesai} onChange={e => setFormData({...formData, jam_selesai: e.target.value})}
+                                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm font-bold outline-none" />
+                            </div>
+                            <div>
+                                <label className="block text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3">Ruangan</label>
+                                <input type="text" value={formData.ruangan} onChange={e => setFormData({...formData, ruangan: e.target.value})}
+                                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm font-bold outline-none" placeholder="Misal: R. 302" />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="pt-6 flex gap-4">
@@ -784,16 +823,15 @@ const Schedule = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {matkuls.length > 0 ? matkuls.map((m, idx) => {
-                                    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
-                                    const day = days[idx % days.length];
-                                    const time = `${8 + (idx % 4) * 2}:00 - ${10 + (idx % 4) * 2}:00`;
+                                {matkuls.length > 0 ? matkuls.map((m) => {
                                     return (
                                         <tr key={m.id} className="hover:bg-indigo-50/30 transition-colors">
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col">
-                                                    <span className="font-black text-slate-800 text-sm">{day}</span>
-                                                    <span className="text-indigo-600 font-bold text-xs">{time}</span>
+                                                    <span className="font-black text-slate-800 text-sm">{m.hari || 'Belum diatur'}</span>
+                                                    <span className="text-indigo-600 font-bold text-xs">
+                                                        {m.jam_mulai && m.jam_selesai ? `${m.jam_mulai.substring(0, 5)} - ${m.jam_selesai.substring(0, 5)}` : 'Waktu belum diatur'}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
@@ -803,7 +841,7 @@ const Schedule = () => {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-xs font-bold">R. {101 + idx}</span>
+                                                <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-xs font-bold">{m.ruangan || 'TBA'}</span>
                                             </td>
                                         </tr>
                                     );
@@ -1023,50 +1061,168 @@ const Login = ({ setUser }) => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col lg:flex-row bg-white overflow-hidden">
-            <div className="hidden lg:flex lg:w-3/5 bg-slate-900 p-20 flex-col justify-between relative overflow-hidden">
+        <div className="min-h-screen flex flex-col lg:flex-row bg-white overflow-hidden font-sans selection:bg-indigo-100 selection:text-indigo-700">
+            <div className="hidden lg:flex lg:w-3/5 bg-slate-950 p-20 flex-col justify-between relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600 rounded-full blur-[160px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
+                <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-600 rounded-full blur-[120px] opacity-10 -translate-x-1/2 translate-y-1/2"></div>
+                
                 <div className="relative z-10">
-                    <div className="flex items-center text-white mb-20">
-                        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-2xl shadow-indigo-500/20">
+                    <div className="flex items-center text-white mb-20 group cursor-default">
+                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center mr-4 shadow-2xl shadow-indigo-500/40 group-hover:scale-110 transition-transform duration-500">
                             <GraduationCap size={28} strokeWidth={2.5} />
                         </div>
-                        <span className="text-2xl font-black tracking-tighter uppercase">Tech University</span>
+                        <span className="text-2xl font-black tracking-tighter uppercase italic">Tech University</span>
                     </div>
                     <div className="max-w-xl">
-                        <h2 className="text-6xl font-black text-white leading-tight tracking-tighter mb-8">Modern Solution for <span className="text-indigo-500">Academic</span> Management.</h2>
+                        <h2 className="text-6xl font-black text-white leading-tight tracking-tighter mb-8 italic">Limitless <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">Education</span> for Everyone.</h2>
                         <p className="text-xl text-slate-400 font-medium leading-relaxed">Satu platform terintegrasi untuk mengelola data mahasiswa, kurikulum, dan nilai secara efisien dan aman.</p>
                     </div>
                 </div>
+                
+                <div className="relative z-10 flex items-center gap-4">
+                    <div className="flex -space-x-3">
+                        {[1, 2, 3, 4].map(i => (
+                            <img key={i} src={`https://i.pravatar.cc/150?u=${i}`} className="w-10 h-10 rounded-full border-2 border-slate-950 object-cover" alt="User" />
+                        ))}
+                    </div>
+                    <p className="text-slate-500 text-sm font-bold tracking-tight">Joined by <span className="text-white">2,000+</span> students this year</p>
+                </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-10 lg:p-24 bg-white relative">
+            <div className="flex-1 flex items-center justify-center p-8 lg:p-16 bg-white relative">
                 <div className="max-w-md w-full animate-in fade-in slide-in-from-right-4 duration-700">
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">Selamat Datang</h1>
-                    <p className="text-slate-500 font-medium mt-2 mb-10 text-lg">Masuk untuk mengakses dashboard akademik Anda.</p>
-                    {error && <div className="bg-red-50 border border-red-100 text-red-600 p-5 rounded-3xl mb-8 flex items-start gap-3"><AlertCircle size={20} className="shrink-0 mt-0.5" /><p className="text-sm font-bold">{error}</p></div>}
+                    <div className="mb-10">
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none">Welcome Back</h1>
+                        <p className="text-slate-500 font-medium mt-3 text-lg">Masuk untuk mengakses dashboard akademik Anda.</p>
+                    </div>
+                    
+                    {error && (
+                        <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl mb-6 flex items-start gap-3 animate-shake">
+                            <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                            <p className="text-xs font-bold leading-relaxed">{error}</p>
+                        </div>
+                    )}
+                    
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-3 ml-1">Email atau Username</label>
+                        <div className="space-y-2">
+                            <label className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] ml-1">Account Identity</label>
                             <input type="text" value={login} onChange={e => setLogin(e.target.value)} required 
-                                className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" placeholder="admin / user@gmail.com" />
+                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="Username or Email" />
                         </div>
-                        <div>
-                            <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-3 ml-1">Kata Sandi Rahasia</label>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center px-1">
+                                <label className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em]">Security Key</label>
+                                <button type="button" className="text-indigo-600 font-bold text-[10px] uppercase tracking-widest hover:text-indigo-700 transition-colors">Forgot Password?</button>
+                            </div>
                             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required 
-                                className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold" placeholder="••••••••" />
+                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="••••••••" />
                         </div>
-                        <button type="submit" disabled={loading} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 transition-all flex items-center justify-center">
-                            {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Masuk ke Sistem'}
+                        
+                        <button type="submit" disabled={loading} 
+                            className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-4.5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-1 active:scale-[0.98] transition-all flex items-center justify-center group overflow-hidden relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                            {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (
+                                <>Sign In Now <ChevronRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" /></>
+                            )}
                         </button>
                     </form>
-                    <p className="text-center text-slate-400 mt-12 font-medium">
-                        Belum punya akun? <Link to="/register" className="text-indigo-600 font-bold hover:underline">Daftar Sekarang</Link>
+                    <p className="text-center text-slate-400 mt-10 font-bold text-[10px] uppercase tracking-[0.2em]">
+                        Don't have an account? <Link to="/register" className="text-indigo-600 hover:text-indigo-700 transition-colors border-b-2 border-indigo-100 hover:border-indigo-600 pb-0.5">Create one</Link>
                     </p>
                 </div>
             </div>
         </div>
     );
+};
+
+// --- Interactive Background Component ---
+
+const ParticleBackground = () => {
+    useEffect(() => {
+        const canvas = document.getElementById('particleCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationFrameId;
+
+        const resize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                else if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                else if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.4)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const init = () => {
+            particles = [];
+            for (let i = 0; i < 80; i++) {
+                particles.push(new Particle());
+            }
+        };
+
+        const connect = () => {
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    let dx = particles[a].x - particles[b].x;
+                    let dy = particles[a].y - particles[b].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 160) {
+                        ctx.strokeStyle = `rgba(99, 102, 241, ${0.15 * (1 - distance/160)})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        };
+
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            connect();
+            animationFrameId = requestAnimationFrame(animate);
+        };
+
+        init();
+        animate();
+
+        return () => {
+            window.removeEventListener('resize', resize);
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, []);
+
+    return <canvas id="particleCanvas" className="absolute inset-0 z-0 bg-slate-950" />;
 };
 
 const Register = () => {
@@ -1090,89 +1246,80 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-6 lg:p-10">
-            <div className="max-w-5xl w-full bg-white rounded-[48px] shadow-2xl shadow-slate-200 overflow-hidden flex flex-col lg:flex-row animate-in zoom-in duration-700">
-                <div className="lg:w-2/5 bg-indigo-600 p-12 lg:p-16 text-white flex flex-col justify-between relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full">
-                         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-white/10 rounded-full blur-3xl"></div>
-                         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-400/20 rounded-full blur-3xl"></div>
-                    </div>
-                    <div className="relative z-10">
-                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-10 backdrop-blur-md border border-white/30 shadow-xl">
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-6 font-sans">
+            <ParticleBackground />
+
+            <div className="max-w-md w-full relative z-10 animate-in zoom-in duration-700">
+                <div className="bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-[48px] shadow-2xl p-10 text-white overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    
+                    <div className="text-center mb-8 relative z-10">
+                        <div className="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-2xl shadow-indigo-500/40">
                             <GraduationCap size={32} strokeWidth={2.5} />
                         </div>
-                        <h2 className="text-4xl font-black leading-tight tracking-tight mb-6">Mulai Perjalanan Akademik Anda.</h2>
-                        <p className="text-indigo-100 text-lg font-medium leading-relaxed opacity-90">Bergabunglah dengan ribuan mahasiswa lainnya dalam ekosistem digital kampus yang modern dan terintegrasi.</p>
+                        <h3 className="text-3xl font-black tracking-tighter mb-2 italic">Create Account</h3>
+                        <p className="text-slate-400 font-medium text-sm">Bergabung dalam ekosistem akademik modern.</p>
                     </div>
-                    <div className="relative z-10 mt-12">
-                        <div className="flex -space-x-3 mb-4">
-                            {[1,2,3,4].map(i => (
-                                <img key={i} className="w-10 h-10 rounded-full border-4 border-indigo-600 shadow-lg" src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" />
-                            ))}
-                            <div className="w-10 h-10 rounded-full bg-indigo-500 border-4 border-indigo-600 flex items-center justify-center text-[10px] font-bold shadow-lg">+2k</div>
+                    
+                    <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="block text-indigo-300 font-black text-[9px] uppercase tracking-[0.2em] ml-1">Full Name</label>
+                                <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required 
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none transition-all font-bold placeholder:text-slate-600" placeholder="John Doe" />
+                                {errors.name && <p className="text-red-400 text-[8px] font-bold uppercase ml-1">{errors.name[0]}</p>}
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="block text-indigo-300 font-black text-[9px] uppercase tracking-[0.2em] ml-1">Username</label>
+                                <input type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} required 
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none transition-all font-bold placeholder:text-slate-600" placeholder="john.doe" />
+                                {errors.username && <p className="text-red-400 text-[8px] font-bold uppercase ml-1">{errors.username[0]}</p>}
+                            </div>
                         </div>
-                        <p className="text-indigo-200 text-xs font-bold uppercase tracking-widest">Terpercaya di 50+ Universitas</p>
-                    </div>
-                </div>
 
-                <div className="flex-1 p-12 lg:p-16">
-                    <div className="max-w-md mx-auto">
-                        <h3 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Buat Akun Baru</h3>
-                        <p className="text-slate-500 font-medium mb-10">Lengkapi formulir di bawah untuk mendaftar.</p>
-                        
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Nama Lengkap</label>
-                                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required 
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="John Doe" />
-                                    {errors.name && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.name[0]}</p>}
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Username</label>
-                                    <input type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} required 
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="johndoe123" />
-                                    {errors.username && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.username[0]}</p>}
-                                </div>
+                        <div className="space-y-1.5">
+                            <label className="block text-indigo-300 font-black text-[9px] uppercase tracking-[0.2em] ml-1">Email Address</label>
+                            <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required 
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none transition-all font-bold placeholder:text-slate-600" placeholder="johndoe@email.com" />
+                            {errors.email && <p className="text-red-400 text-[8px] font-bold uppercase ml-1">{errors.email[0]}</p>}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="block text-indigo-300 font-black text-[9px] uppercase tracking-[0.2em] ml-1">Password</label>
+                                <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required 
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none transition-all font-bold placeholder:text-slate-600" placeholder="••••••••" />
+                                {errors.password && <p className="text-red-400 text-[8px] font-bold uppercase ml-1">{errors.password[0]}</p>}
                             </div>
-
-                            <div>
-                                <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Alamat Email</label>
-                                <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required 
-                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="hello@example.com" />
-                                {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.email[0]}</p>}
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Kata Sandi</label>
-                                    <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required 
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold placeholder:text-slate-300" placeholder="••••••••" />
-                                    {errors.password && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.password[0]}</p>}
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2 ml-1">Daftar Sebagai</label>
+                            <div className="space-y-1.5">
+                                <label className="block text-indigo-300 font-black text-[9px] uppercase tracking-[0.2em] ml-1">User Role</label>
+                                <div className="relative">
                                     <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} required
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold">
-                                        <option value="user">Mahasiswa</option>
-                                        <option value="admin">Administrator</option>
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none transition-all font-bold appearance-none cursor-pointer">
+                                        <option value="user" className="bg-slate-900">Mahasiswa</option>
+                                        <option value="admin" className="bg-slate-900">Administrator</option>
                                     </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-indigo-300">
+                                        <ChevronRight size={14} className="rotate-90" />
+                                    </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="pt-4">
-                                <button type="submit" disabled={loading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center justify-center group">
-                                    {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (
-                                        <>Mendaftar Sekarang <ChevronRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" /></>
-                                    )}
-                                </button>
-                            </div>
-                            
-                            <p className="text-center text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] pt-4">
-                                Sudah punya akun? <Link to="/login" className="text-indigo-600 hover:underline">Masuk di sini</Link>
-                            </p>
-                        </form>
-                    </div>
+                        <div className="pt-6">
+                            <button type="submit" disabled={loading} 
+                                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-4 rounded-[20px] font-black text-[11px] uppercase tracking-[0.25em] hover:shadow-2xl hover:shadow-indigo-500/40 hover:-translate-y-1 active:scale-[0.98] transition-all flex items-center justify-center group relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (
+                                    <>Start Registration <ChevronRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" /></>
+                                )}
+                            </button>
+                        </div>
+                        
+                        <p className="text-center text-slate-500 font-bold text-[9px] uppercase tracking-[0.2em] pt-6">
+                            Already a member? <Link to="/login" className="text-indigo-400 hover:text-indigo-300 transition-colors border-b-2 border-indigo-900 hover:border-indigo-400 pb-0.5">Sign In Here</Link>
+                        </p>
+                    </form>
                 </div>
             </div>
         </div>

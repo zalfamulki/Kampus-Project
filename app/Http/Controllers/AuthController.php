@@ -88,12 +88,9 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         $user = auth('api')->user();
-        
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
-            'username' => 'required|string|between:2,100|unique:users,username,'.$user->id,
-            'email' => 'required|string|email|max:100|unique:users,email,'.$user->id,
-            'password' => 'nullable|string|min:6',
         ]);
 
         if ($validator->fails()) {
@@ -101,12 +98,6 @@ class AuthController extends Controller
         }
 
         $user->name = $request->name;
-        $user->username = $request->username;
-        $user->email = $request->email;
-        
-        if ($request->password) {
-            $user->password = Hash::make($request->password);
-        }
 
         $user->save();
 
@@ -115,7 +106,6 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
-
     /**
      * Log the user out (Invalidate the token).
      *

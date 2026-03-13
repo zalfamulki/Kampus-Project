@@ -38,6 +38,10 @@ class MatkulController extends Controller
             'kode' => 'required|string|max:50|unique:matkuls,kode',
             'nama' => 'required|string|max:255',
             'jurusan' => 'nullable|string|max:255',
+            'hari' => 'nullable|string|max:20',
+            'jam_mulai' => 'nullable|string',
+            'jam_selesai' => 'nullable|string',
+            'ruangan' => 'nullable|string|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -88,6 +92,10 @@ class MatkulController extends Controller
             'kode' => 'required|string|max:50|unique:matkuls,kode,' . $id,
             'nama' => 'required|string|max:255',
             'jurusan' => 'nullable|string|max:255',
+            'hari' => 'nullable|string|max:20',
+            'jam_mulai' => 'nullable|string',
+            'jam_selesai' => 'nullable|string',
+            'ruangan' => 'nullable|string|max:50',
         ]);
 
         if ($validator->fails()) {
